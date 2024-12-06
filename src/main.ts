@@ -65,7 +65,7 @@ let camera = new PerspectiveCamera(
     20,
     window.innerWidth / window.innerHeight,
     0.1,
-    1000
+    100
 );
 camera.position.z = 5;
 
@@ -89,42 +89,18 @@ await gltfLoader.loadAsync("/wutville.glb").then((glb) => {
     camera.position.copy(glb.cameras[0].position);
     camera.rotation.copy(glb.cameras[0].rotation);
 
-    glb.scene.castShadow = true;
-    glb.scene.receiveShadow = true;
-
     glb.scene.traverse((obj) => {
         // blender lights are really fucking strong
         if (obj instanceof Light) {
             obj.intensity *= 0.003;
-        }
-
-        if (obj instanceof Mesh) {
-            obj.castShadow = true;
-            obj.receiveShadow = true;
-        }
-
-        // the sun......
-        if (obj instanceof DirectionalLight) {
-            obj.getWorldDirection(sunDir);
-
-            obj.castShadow = true;
-            obj.receiveShadow = false;
-
-            obj.shadow.radius = 6;
-            obj.shadow.mapSize = new Vector2(2048, 2048);
-            // need this to make it cover the whole scene
-            obj.shadow.camera.scale.multiplyScalar(3.5);
-            obj.shadow.camera.near = 0.1;
-            obj.shadow.bias = -0.0005;
-            obj.shadow.camera.far = 50;
         }
     });
 
     scene.add(glb.scene);
 });
 
-scene.add(new AmbientLight("#FFFFFF", 1));
-scene.fog = new Fog("#20538a", 5, 100);
+scene.add(new AmbientLight("#bdd6ff", 0.6));
+scene.fog = new Fog("#20538a", 5, 75);
 
 new TextureLoader(loadingManager).loadAsync("/skybox.png").then((t) => {
     t.mapping = EquirectangularReflectionMapping;
