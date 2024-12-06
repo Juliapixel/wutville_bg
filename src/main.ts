@@ -202,16 +202,7 @@ function draw() {
     // update stats and shit
     if (stats && emoteCountPanel) {
         stats.end();
-        if (sceneEmoteArray.length > 0) {
-            emoteCountPanel.update(
-                sceneEmoteArray
-                    .map((group) => group.children.length)
-                    .reduce((sum, cur) => (sum += cur)),
-                50
-            );
-        } else {
-            emoteCountPanel.update(0, 50);
-        }
+        emoteCountPanel.update(sceneEmoteArray.length, 50);
     }
 }
 
@@ -244,9 +235,11 @@ const spawnEmote = (emotes: CallbackEmoteInfo[], channel: string) => {
             let action = mixer.clipAction(walkAnim);
             action.play();
 
+            obj.userData.animationMixer = mixer;
+
             obj.updateAnim = (deltaTime: number) => {
                 obj.animateTexture((performance.now() + obj.userData.timestamp) / 1000)
-                mixer.update(deltaTime);
+                obj.userData.animationMixer.update(deltaTime);
 
                 // make it point the right way
                 obj.rotateX(-Math.PI / 2);
