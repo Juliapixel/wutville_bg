@@ -38,6 +38,7 @@ import { EmotesClient, EmoteObject, CallbackEmoteInfo } from "twitch-emote-clien
 
 import { SnowPass } from "./overlay";
 import { RingBuffer } from "./ringbuffer";
+import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 
 // a default array of twitch channels to join
 let channels: string[] = [];
@@ -73,18 +74,18 @@ let camera = new PerspectiveCamera(
     0.1,
     100
 );
-camera.position.z = 5;
 
 const scene = new Scene();
 
 let loadingManager = new LoadingManager();
 let gltfLoader = new GLTFLoader(loadingManager);
+gltfLoader.setMeshoptDecoder(MeshoptDecoder)
 
 let sunDir = new Vector3();
 let walkAnim: AnimationClip;
 
 // load the scene from blender
-await gltfLoader.loadAsync("/wutville.glb").then((glb) => {
+await gltfLoader.loadAsync("/wutville_comp.glb").then((glb) => {
     // things this animation are applied to must all be called "root" or it no
     // workie
     walkAnim = glb.animations[0];
@@ -94,6 +95,10 @@ await gltfLoader.loadAsync("/wutville.glb").then((glb) => {
 
     camera.position.copy(glb.cameras[0].position);
     camera.rotation.copy(glb.cameras[0].rotation);
+    camera.fov = (glb.cameras[0] as PerspectiveCamera).fov;
+    camera.far = 75;
+    camera.near = 0.1;
+    camera.updateProjectionMatrix();
 
     glb.scene.traverse((obj) => {
         // blender lights are really fucking strong
@@ -250,7 +255,7 @@ const spawnEmote = (emotes: CallbackEmoteInfo[], channel: string) => {
                 // make it point the right way
                 obj.rotateX(-Math.PI / 2);
                 obj.rotateZ(Math.PI / 2);
-                obj.translateY(-0.2);
+                obj.translateY(-0.1);
             };
 
             emoteQueue.enqueue(obj)
