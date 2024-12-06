@@ -13,11 +13,12 @@ export class RingBuffer<T> {
 
     enqueue(item: T): T | undefined {
         if (this.size == this.capacity) {
-            const prevStart = this.start
-            this.start = (this.start + 1) % this.capacity;
-            return this.buffer[prevStart];
+            const out = this.buffer[this.start];
+            this.buffer[this.start] = item;
+            this.start = (this.start + 1) % (this.capacity - 1);
+            return out;
         }
-        const insertIdx = (this.start + this.size) % this.capacity;
+        const insertIdx = (this.start + this.size) % (this.capacity - 1);
         this.buffer[insertIdx] = item;
         this.size += 1;
         return;
