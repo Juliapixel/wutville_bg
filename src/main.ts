@@ -147,10 +147,8 @@ declare module "twitch-emote-client" {
     interface EmoteObject {
         updateAnim: (deltaTime: number) => void;
         userData: {
-            timestamp: number;
-            lifetime?: number;
-            lifespan: number;
-            velocity: Vector3;
+            timestamp: number,
+            animationMixer: AnimationMixer
         };
     }
 }
@@ -191,7 +189,7 @@ function draw() {
 
     for (let index = sceneEmoteArray.length - 1; index >= 0; index--) {
         const element = sceneEmoteArray[index];
-        if (element.userData.timestamp + element.userData.lifespan < Date.now()) {
+        if (element.userData.animationMixer.time >= walkAnim.duration) {
             sceneEmoteArray.splice(index, 1);
             scene.remove(element);
         } else if (element.updateAnim) {
@@ -245,8 +243,6 @@ const spawnEmote = (emotes: CallbackEmoteInfo[], channel: string) => {
             let mixer = new AnimationMixer(obj);
             let action = mixer.clipAction(walkAnim);
             action.play();
-
-            obj.userData.lifespan = walkAnim.duration * 1000;
 
             obj.updateAnim = (deltaTime: number) => {
                 obj.animateTexture((performance.now() + obj.userData.timestamp) / 1000)
