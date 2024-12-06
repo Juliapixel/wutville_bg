@@ -42,7 +42,7 @@ export const shader = {
             + (texel2 * texel2.a * alpha * 0.6);
         gl_FragColor =
             gl_FragColor
-            + (texel3 * texel3.a * alpha);
+            + (texel3 * texel3.a * alpha * 0.4);
 
         // gl_FragColor = texture2D(tDiffuse, newUv);
     }`,

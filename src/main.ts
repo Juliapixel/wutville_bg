@@ -148,7 +148,7 @@ composer.addPass(new RenderPass(scene, camera));
 let snow = new TextureLoader(loadingManager).load("/snow.png");
 snow.colorSpace = SRGBColorSpace;
 console.log(snow);
-composer.addPass(new SnowPass(snow, 0.6))
+composer.addPass(new SnowPass(snow, 0.5))
 
 let smaaPass = new SMAAPass(window.innerWidth, window.innerHeight);
 composer.addPass(smaaPass);
