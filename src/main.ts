@@ -147,11 +147,10 @@ composer.addPass(new RenderPass(scene, camera));
 
 let snow = new TextureLoader(loadingManager).load("/snow.png");
 snow.colorSpace = SRGBColorSpace;
-composer.addPass(new SnowPass(snow, 0.5))
+composer.addPass(new SnowPass(snow, 0.5));
 
 let smaaPass = new SMAAPass(window.innerWidth, window.innerHeight);
 composer.addPass(smaaPass);
-
 
 composer.addPass(new OutputPass());
 

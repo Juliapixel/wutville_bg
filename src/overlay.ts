@@ -1,6 +1,11 @@
-import { RepeatWrapping, ShaderMaterial, Texture, WebGLRenderer, WebGLRenderTarget } from "three";
+import {
+    RepeatWrapping,
+    ShaderMaterial,
+    Texture,
+    WebGLRenderer,
+    WebGLRenderTarget
+} from "three";
 import { ShaderPass } from "three/examples/jsm/Addons.js";
-import { Pass } from "three/examples/jsm/postprocessing/Pass.js";
 
 export const shader = {
     name: "OverlayPassShader",
@@ -53,9 +58,8 @@ export const shader = {
         vUv = uv;
         gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
     }
-    `,
-
-}
+    `
+};
 
 export class SnowPass extends ShaderPass {
     map: Texture;
@@ -68,32 +72,39 @@ export class SnowPass extends ShaderPass {
             fragmentShader: shader.fragmentShader,
             vertexShader: shader.vertexShader,
             uniforms: {
-                "tMap": {value: map},
-                "timestamp": {value: 0},
-                "alpha": {value: alpha}
+                tMap: { value: map },
+                timestamp: { value: 0 },
+                alpha: { value: alpha }
             },
             transparent: true
-        })
-        super(mat)
+        });
+        super(mat);
     }
 
-    render(renderer: WebGLRenderer, writeBuffer: WebGLRenderTarget, readBuffer: WebGLRenderTarget, deltaTime: number, maskActive: boolean): void {
-        this.uniforms[ this.textureID ] = { value: readBuffer.texture }
+    render(
+        renderer: WebGLRenderer,
+        writeBuffer: WebGLRenderTarget,
+        readBuffer: WebGLRenderTarget,
+        deltaTime: number,
+        maskActive: boolean
+    ): void {
+        this.uniforms[this.textureID] = { value: readBuffer.texture };
         this.uniforms.timestamp.value += deltaTime;
 
         this.fsQuad.material = this.material;
 
-        if ( this.renderToScreen ) {
-
-            renderer.setRenderTarget( null );
-            this.fsQuad.render( renderer );
-
+        if (this.renderToScreen) {
+            renderer.setRenderTarget(null);
+            this.fsQuad.render(renderer);
         } else {
-
-            renderer.setRenderTarget( writeBuffer );
-            if ( this.clear ) renderer.clear( renderer.autoClearColor, renderer.autoClearDepth, renderer.autoClearStencil );
-            this.fsQuad.render( renderer );
-
+            renderer.setRenderTarget(writeBuffer);
+            if (this.clear)
+                renderer.clear(
+                    renderer.autoClearColor,
+                    renderer.autoClearDepth,
+                    renderer.autoClearStencil
+                );
+            this.fsQuad.render(renderer);
         }
     }
 }
