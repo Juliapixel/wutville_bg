@@ -15,10 +15,10 @@ export class RingBuffer<T> {
         if (this.size == this.capacity) {
             const out = this.buffer[this.start];
             this.buffer[this.start] = item;
-            this.start = (this.start + 1) % (this.capacity - 1);
+            this.start = (this.start + 1) % this.capacity;
             return out;
         }
-        const insertIdx = (this.start + this.size) % (this.capacity - 1);
+        const insertIdx = (this.start + this.size) % this.capacity;
         this.buffer[insertIdx] = item;
         this.size += 1;
         return;
