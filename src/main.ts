@@ -1,10 +1,10 @@
-import Stats from "three/examples/jsm/libs/stats.module.js";
 import "./style.css";
 
 import {
     AmbientLight,
     AnimationClip,
     AnimationMixer,
+    ArrowHelper,
     DirectionalLight,
     EquirectangularReflectionMapping,
     Fog,
@@ -14,6 +14,8 @@ import {
     Mesh,
     PCFShadowMap,
     PerspectiveCamera,
+    Plane,
+    PlaneHelper,
     RepeatWrapping,
     Scene,
     SRGBColorSpace,
@@ -22,7 +24,6 @@ import {
     Vector3,
     WebGLRenderer
 } from "three";
-import { EmotesClient, EmoteObject, CallbackEmoteInfo } from "twitch-emote-client";
 import {
     EffectComposer,
     GLTFLoader,
@@ -31,7 +32,12 @@ import {
     SMAAPass,
     TexturePass
 } from "three/examples/jsm/Addons.js";
+import Stats from "three/examples/jsm/libs/stats.module.js";
+
+import { EmotesClient, EmoteObject, CallbackEmoteInfo } from "twitch-emote-client";
+
 import { SnowPass } from "./overlay";
+import { RingBuffer } from "./ringbuffer";
 
 // a default array of twitch channels to join
 let channels: string[] = [];
@@ -132,10 +138,10 @@ composer.addPass(new OutputPass());
 
 // separate from three.js hierarchy, we want to keep track of emotes
 // to update them with custom logic every render tick
-declare module "three" {
-    interface Group {
+declare module "twitch-emote-client" {
+    interface EmoteObject {
         updateAnim: (deltaTime: number) => void;
-        data: {
+        userData: {
             timestamp: number;
             lifetime?: number;
             lifespan: number;
@@ -143,7 +149,19 @@ declare module "three" {
         };
     }
 }
-const sceneEmoteArray: Group[] = [];
+
+const sceneEmoteArray: EmoteObject[] = [];
+let emoteQueue = new RingBuffer<EmoteObject>(50);
+
+setInterval(() => {
+    let emote = emoteQueue.dequeue();
+    if (emote === undefined) {
+        return;
+    }
+    emote.userData.timestamp = Date.now()
+    sceneEmoteArray.push(emote)
+    scene.add(emote)
+}, 500);
 
 function resize() {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -168,7 +186,7 @@ function draw() {
 
     for (let index = sceneEmoteArray.length - 1; index >= 0; index--) {
         const element = sceneEmoteArray[index];
-        if (element.data.timestamp + element.data.lifespan < Date.now()) {
+        if (element.userData.timestamp + element.userData.lifespan < Date.now()) {
             sceneEmoteArray.splice(index, 1);
             scene.remove(element);
         } else if (element.updateAnim) {
@@ -210,73 +228,36 @@ const spawnEmote = (emotes: CallbackEmoteInfo[], channel: string) => {
     //prevent lag caused by emote buildup when you tab out from the page for a while
     if (performance.now() - lastFrame > 1000) return;
 
-    const group = new Group();
-    group.data = {
-        lifespan: 0,
-        timestamp: Date.now(),
-        velocity: new Vector3(Math.random() - 0.5, Math.random() - 0.5, 0)
-            .normalize()
-            .multiply(new Vector3(2, 2, 1))
-    };
-
     let slicedEmotes = emotes.slice(0, 12);
-    let processedEmotes = 0;
-    let i = 0;
     for (const emote of slicedEmotes) {
-        // gotta do this cuz new EmoteObject takes the wrong i for some reason!
-        let curI = i;
-        i++;
         new EmoteObject(emote.source, client.config.emotesApi, emote, (obj) => {
-            let ratio = 0;
-            if (slicedEmotes.length !== 1) {
-                ratio = curI / slicedEmotes.length - 1;
-            }
-
-            obj.castShadow = true;
-            obj.receiveShadow = true;
-            obj.material.toneMapped = false;
-
             // make it not float or sink
             obj.scale.multiplyScalar(0.8);
-            obj.translateX(0.15);
 
-            // conga line
-            obj.position.y = -0.5 * curI;
-            // make it point the right way
-            obj.rotateX(-Math.PI / 2);
-            obj.rotateZ(Math.PI / 2);
 
-            group.add(obj);
-            processedEmotes++;
-            // wait until all emotes have been processed properly to spawn the group
-            // also SURELY this doesnt cause any race conditions right
-            if (processedEmotes === slicedEmotes.length) {
-                group.data.timestamp = Date.now();
-                scene.add(group);
-                sceneEmoteArray.push(group);
-            }
+            obj.userData.timestamp = 0;
+            obj.name = "root";
+
+            let mixer = new AnimationMixer(obj);
+            let action = mixer.clipAction(walkAnim);
+            action.play();
+
+            obj.userData.lifespan = walkAnim.duration * 1000;
+
+            obj.updateAnim = (deltaTime: number) => {
+                obj.animateTexture((performance.now() + obj.userData.timestamp) / 1000)
+                mixer.update(deltaTime);
+
+                // make it point the right way
+                obj.rotateX(-Math.PI / 2);
+                obj.rotateZ(Math.PI / 2);
+                obj.translateY(-0.2);
+            };
+
+            emoteQueue.enqueue(obj)
         });
     }
 
-    // so the animations work
-    group.name = "root";
-
-    let mixer = new AnimationMixer(group);
-    let action = mixer.clipAction(walkAnim);
-    action.play();
-
-    group.data.lifespan = walkAnim.duration * 1000;
-
-    group.updateAnim = (deltaTime: number) => {
-        for (let child of group.children) {
-            if (child instanceof EmoteObject) {
-                child.animateTexture(
-                    (performance.now() + group.data.timestamp) / 1000
-                );
-            }
-        }
-        mixer.update(deltaTime);
-    };
 };
 
 if (document.readyState != "loading") {
