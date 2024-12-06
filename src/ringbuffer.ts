@@ -6,7 +6,7 @@ export class RingBuffer<T> {
 
     constructor(capacity: number) {
         this.capacity = capacity
-        this.buffer = new Array<T | undefined>(capacity)
+        this.buffer = new Array<T | undefined>(capacity).fill(undefined, 0, capacity - 1)
         this.size = 0;
         this.start = 0;
     }
@@ -27,9 +27,9 @@ export class RingBuffer<T> {
         if (this.size == 0) {
             return;
         }
-        const popIdx = (this.start + this.size - 1) % this.capacity;
-        const out = this.buffer[popIdx];
-        this.buffer[popIdx] = undefined;
+        const out = this.buffer[this.start];
+        this.buffer[this.start] = undefined;
+        this.start = (this.start + 1) % this.capacity
         this.size -= 1;
         return out
     }

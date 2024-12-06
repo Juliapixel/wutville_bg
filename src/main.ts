@@ -231,9 +231,8 @@ const spawnEmote = (emotes: CallbackEmoteInfo[], channel: string) => {
     let slicedEmotes = emotes.slice(0, 12);
     for (const emote of slicedEmotes) {
         new EmoteObject(emote.source, client.config.emotesApi, emote, (obj) => {
-            // make it not float or sink
+            // make it smoller
             obj.scale.multiplyScalar(0.8);
-
 
             obj.userData.timestamp = 0;
             obj.name = "root";
