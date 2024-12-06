@@ -78,7 +78,7 @@ let sunDir = new Vector3();
 let walkAnim: AnimationClip;
 
 // load the scene from blender
-gltfLoader.load("/wutville.glb", (glb) => {
+await gltfLoader.loadAsync("/wutville.glb").then((glb) => {
     // things this animation are applied to must all be called "root" or it no
     // workie
     walkAnim = glb.animations[0];
@@ -145,7 +145,7 @@ composer.setSize(window.innerWidth, window.innerHeight);
 
 composer.addPass(new RenderPass(scene, camera));
 
-let snow = new TextureLoader(loadingManager).load("/snow.png");
+let snow = await new TextureLoader(loadingManager).loadAsync("/snow.png");
 snow.colorSpace = SRGBColorSpace;
 composer.addPass(new SnowPass(snow, 0.5));
 
@@ -178,13 +178,6 @@ function resize() {
     renderer.setSize(width, height);
     composer.setSize(width, height);
 }
-
-window.addEventListener("DOMContentLoaded", () => {
-    window.addEventListener("resize", resize);
-    if (stats) document.body.appendChild(stats.dom);
-    document.body.appendChild(renderer.domElement);
-    draw();
-});
 
 /*
  ** Draw loop
@@ -309,3 +302,17 @@ const spawnEmote = (emotes: CallbackEmoteInfo[], channel: string) => {
         mixer.update(deltaTime);
     };
 };
+
+if (document.readyState != "loading") {
+    window.addEventListener("resize", resize);
+    if (stats) document.body.appendChild(stats.dom);
+    document.body.appendChild(renderer.domElement);
+    draw();
+} else {
+    window.addEventListener("DOMContentLoaded", () => {
+        window.addEventListener("resize", resize);
+        if (stats) document.body.appendChild(stats.dom);
+        document.body.appendChild(renderer.domElement);
+        draw();
+    });
+}
