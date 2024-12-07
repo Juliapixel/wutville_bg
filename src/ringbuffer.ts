@@ -1,37 +1,63 @@
-export class RingBuffer<T> {
+export class RingBuffer<T> implements Iterable<T> {
     private buffer: Array<T | undefined>
     private capacity: number;
-    private size: number;
     private start: number;
 
     constructor(capacity: number) {
         this.capacity = capacity
         this.buffer = new Array<T | undefined>(capacity).fill(undefined, 0, capacity - 1)
-        this.size = 0;
+        this.length = 0;
         this.start = 0;
     }
 
+    get length(): number {
+        return this.length;
+    }
+
+    private set length(val: number) {
+        this.length = val;
+    }
+
+    [Symbol.iterator](): Iterator<T, T, T> {
+        let localThis = this;
+        return {
+            next() {
+                let val = localThis.dequeue()
+                if (val !== undefined) {
+                    return {
+                        value: val,
+                        done: false
+                    } as IteratorResult<T, T>
+                } else {
+                    return {
+                        done: true
+                    } as IteratorResult<T, T>
+                }
+            },
+        }
+    }
+
     enqueue(item: T): T | undefined {
-        if (this.size == this.capacity) {
+        if (this.length == this.capacity) {
             const out = this.buffer[this.start];
             this.buffer[this.start] = item;
             this.start = (this.start + 1) % this.capacity;
             return out;
         }
-        const insertIdx = (this.start + this.size) % this.capacity;
+        const insertIdx = (this.start + this.length) % this.capacity;
         this.buffer[insertIdx] = item;
-        this.size += 1;
+        this.length += 1;
         return;
     }
 
     dequeue(): T | undefined {
-        if (this.size == 0) {
+        if (this.length == 0) {
             return;
         }
         const out = this.buffer[this.start];
         this.buffer[this.start] = undefined;
         this.start = (this.start + 1) % this.capacity
-        this.size -= 1;
+        this.length -= 1;
         return out
     }
 }
