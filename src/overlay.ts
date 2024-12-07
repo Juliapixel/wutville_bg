@@ -48,8 +48,6 @@ export const shader = {
         gl_FragColor =
             gl_FragColor
             + (texel3 * texel3.a * alpha * 0.4);
-
-        // gl_FragColor = texture2D(tDiffuse, newUv);
     }`,
     vertexShader: `
     varying vec2 vUv;
