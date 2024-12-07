@@ -34,7 +34,7 @@ import {
 } from "three/examples/jsm/Addons.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 
-import { EmotesClient, EmoteObject, CallbackEmoteInfo } from "twitch-emote-client";
+import { EmotesClient, EmoteObject, CallbackEmoteInfo, EmoteLoader } from "twitch-emote-client";
 
 import { SnowPass } from "./overlay";
 import { RingBuffer } from "./ringbuffer";
@@ -81,7 +81,6 @@ let loadingManager = new LoadingManager();
 let gltfLoader = new GLTFLoader(loadingManager);
 gltfLoader.setMeshoptDecoder(MeshoptDecoder)
 
-let sunDir = new Vector3();
 let walkAnim: AnimationClip;
 
 // load the scene from blender
@@ -218,13 +217,15 @@ client.on("emote", (emotes, channel) => {
 /*
  ** Handle Twitch Chat Emotes
  */
+
+const emoteLoader = new EmoteLoader(loadingManager, client.config.emotesApi);
 const spawnEmote = (emotes: CallbackEmoteInfo[], channel: string) => {
     //prevent lag caused by emote buildup when you tab out from the page for a while
     if (performance.now() - lastFrame > 1000) return;
 
     let slicedEmotes = emotes.slice(0, 12);
     for (const emote of slicedEmotes) {
-        new EmoteObject(emote.source, client.config.emotesApi, emote, (obj) => {
+        emoteLoader.loadAsync(emote).then((obj) => {
             // make it smoller
             obj.scale.multiplyScalar(0.8);
 

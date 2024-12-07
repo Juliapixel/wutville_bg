@@ -6,13 +6,14 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "optimize": "gltfpack -tu -ts 0.5 -tl 512 -mi -vp 16 -vpf -i public/wutville.glb -o public/wutville_comp.glb"
   },
   "keywords": [],
   "author": "Juliapixel",
   "dependencies": {
     "three": "^0.171.0",
-    "twitch-emote-client": "^0.2.1"
+    "twitch-emote-client": "^0.3.0"
   },
   "devDependencies": {
     "@types/three": "^0.170.0",
