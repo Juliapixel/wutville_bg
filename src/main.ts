@@ -207,7 +207,9 @@ function draw() {
             scene.remove(element);
             let texCount = textureUseCount.sub(element.material.map?.id as number);
             if (texCount === 0) {
-                console.debug("diposed of", element.material.map);
+                if (import.meta.env.DEV) {
+                    console.debug("diposed of", element.material.map);
+                }
                 element.material.map?.dispose();
             }
         } else if (element.updateAnim) {
