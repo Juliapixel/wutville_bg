@@ -1,4 +1,4 @@
-import? local.just
+import? "local.just"
 
 default:
     just --list
