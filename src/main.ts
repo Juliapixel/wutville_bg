@@ -34,7 +34,12 @@ import {
 } from "three/examples/jsm/Addons.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 
-import { EmotesClient, EmoteObject, CallbackEmoteInfo, EmoteLoader } from "twitch-emote-client";
+import {
+    EmotesClient,
+    EmoteObject,
+    CallbackEmoteInfo,
+    EmoteLoader
+} from "twitch-emote-client";
 
 import { SnowPass } from "./overlay";
 import { RingBuffer } from "./ringbuffer";
@@ -80,44 +85,48 @@ const scene = new Scene();
 
 let loadingManager = new LoadingManager();
 let gltfLoader = new GLTFLoader(loadingManager);
-gltfLoader.setMeshoptDecoder(MeshoptDecoder)
+gltfLoader.setMeshoptDecoder(MeshoptDecoder);
 
 let walkAnim: AnimationClip;
 
 // load the scene from blender
-await gltfLoader.loadAsync("/wutville_comp.glb").then((glb) => {
-    // things this animation are applied to must all be called "root" or it no
-    // workie
-    walkAnim = glb.animations[0];
-    walkAnim.tracks.forEach((val) => {
-        val.name = val.name.replace("Plane001", "root");
+await gltfLoader
+    .loadAsync("https://cdn.juliapixel.com/christmas/wutville_comp.glb")
+    .then((glb) => {
+        // things this animation are applied to must all be called "root" or it no
+        // workie
+        walkAnim = glb.animations[0];
+        walkAnim.tracks.forEach((val) => {
+            val.name = val.name.replace("Plane001", "root");
+        });
+
+        camera.position.copy(glb.cameras[0].position);
+        camera.rotation.copy(glb.cameras[0].rotation);
+        camera.fov = (glb.cameras[0] as PerspectiveCamera).fov;
+        camera.far = 75;
+        camera.near = 0.1;
+        camera.updateProjectionMatrix();
+
+        glb.scene.traverse((obj) => {
+            // blender lights are really fucking strong
+            if (obj instanceof Light) {
+                obj.intensity *= 0.003;
+            }
+        });
+
+        scene.add(glb.scene);
     });
-
-    camera.position.copy(glb.cameras[0].position);
-    camera.rotation.copy(glb.cameras[0].rotation);
-    camera.fov = (glb.cameras[0] as PerspectiveCamera).fov;
-    camera.far = 75;
-    camera.near = 0.1;
-    camera.updateProjectionMatrix();
-
-    glb.scene.traverse((obj) => {
-        // blender lights are really fucking strong
-        if (obj instanceof Light) {
-            obj.intensity *= 0.003;
-        }
-    });
-
-    scene.add(glb.scene);
-});
 
 scene.add(new AmbientLight("#bdd6ff", 0.6));
 scene.fog = new Fog("#20538a", 5, 75);
 
-new TextureLoader(loadingManager).loadAsync("/skybox.png").then((t) => {
-    t.mapping = EquirectangularReflectionMapping;
-    t.colorSpace = SRGBColorSpace;
-    scene.background = t;
-});
+new TextureLoader(loadingManager)
+    .loadAsync("https://cdn.juliapixel.com/christmas/skybox.png")
+    .then((t) => {
+        t.mapping = EquirectangularReflectionMapping;
+        t.colorSpace = SRGBColorSpace;
+        scene.background = t;
+    });
 
 const renderer = new WebGLRenderer({ antialias: false, stencil: false });
 
@@ -135,7 +144,9 @@ composer.addPass(new RenderPass(scene, camera));
 let smaaPass = new SMAAPass(window.innerWidth, window.innerHeight);
 composer.addPass(smaaPass);
 
-let snow = await new TextureLoader(loadingManager).loadAsync("/snow.png");
+let snow = await new TextureLoader(loadingManager).loadAsync(
+    "https://cdn.juliapixel.com/christmas/snow.png"
+);
 snow.colorSpace = SRGBColorSpace;
 composer.addPass(new SnowPass(snow, 0.5));
 
@@ -147,8 +158,8 @@ declare module "twitch-emote-client" {
     interface EmoteObject {
         updateAnim: (deltaTime: number) => void;
         userData: {
-            timestamp: number,
-            animationMixer: AnimationMixer
+            timestamp: number;
+            animationMixer: AnimationMixer;
         };
     }
 }
@@ -162,9 +173,9 @@ setInterval(() => {
     if (emote === undefined) {
         return;
     }
-    emote.userData.timestamp = Date.now()
-    sceneEmoteArray.push(emote)
-    scene.add(emote)
+    emote.userData.timestamp = Date.now();
+    sceneEmoteArray.push(emote);
+    scene.add(emote);
     textureUseCount.add(emote.material.map?.id as number);
 }, 500);
 
@@ -196,7 +207,7 @@ function draw() {
             scene.remove(element);
             let texCount = textureUseCount.sub(element.material.map?.id as number);
             if (texCount === 0) {
-                console.debug("diposed of", element.material.map)
+                console.debug("diposed of", element.material.map);
                 element.material.map?.dispose();
             }
         } else if (element.updateAnim) {
@@ -247,7 +258,9 @@ const spawnEmote = (emotes: CallbackEmoteInfo[], channel: string) => {
             obj.userData.animationMixer = mixer;
 
             obj.updateAnim = (deltaTime: number) => {
-                obj.animateTexture((performance.now() + obj.userData.timestamp) / 1000)
+                obj.animateTexture(
+                    (performance.now() + obj.userData.timestamp) / 1000
+                );
                 obj.userData.animationMixer.update(deltaTime);
 
                 // make it point the right way
@@ -256,10 +269,9 @@ const spawnEmote = (emotes: CallbackEmoteInfo[], channel: string) => {
                 obj.translateY(-0.1);
             };
 
-            emoteQueue.enqueue(obj)
+            emoteQueue.enqueue(obj);
         });
     }
-
 };
 
 if (document.readyState != "loading") {
