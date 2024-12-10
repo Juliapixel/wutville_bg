@@ -2,20 +2,13 @@ export class RingBuffer<T> implements Iterable<T> {
     private buffer: Array<T | undefined>
     private capacity: number;
     private start: number;
+    private length: number;
 
     constructor(capacity: number) {
         this.capacity = capacity
         this.buffer = new Array<T | undefined>(capacity).fill(undefined, 0, capacity - 1)
         this.length = 0;
         this.start = 0;
-    }
-
-    get length(): number {
-        return this.length;
-    }
-
-    private set length(val: number) {
-        this.length = val;
     }
 
     [Symbol.iterator](): Iterator<T, T, T> {
