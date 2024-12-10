@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite dev",
+    "prebuild": "rimraf dist",
     "build": "vite build",
     "format": "prettier --write .",
-    "optimize": "gltfpack -tu -ts 0.5 -tl 512 -mi -vp 16 -vpf -i public/wutville.glb -o public/wutville_comp.glb"
+    "optimize": "gltfpack -tu -ts 0.5 -tl 512 -mi -vp 16 -vpf -i assets/wutville.glb -o assets/wutville_comp.glb"
   },
   "keywords": [],
   "author": "Juliapixel",
@@ -18,6 +19,7 @@
   "devDependencies": {
     "@types/three": "^0.170.0",
     "prettier": "^3.4.2",
+    "rimraf": "^6.0.1",
     "typescript": "^5.7.2",
     "vite": "^6.0.3",
     "vite-plugin-top-level-await": "^1.4.4"
