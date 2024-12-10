@@ -39,6 +39,7 @@ import { EmotesClient, EmoteObject, CallbackEmoteInfo, EmoteLoader } from "twitc
 import { SnowPass } from "./overlay";
 import { RingBuffer } from "./ringbuffer";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
+import { Counter } from "./counter";
 
 // a default array of twitch channels to join
 let channels: string[] = [];
@@ -154,6 +155,7 @@ declare module "twitch-emote-client" {
 
 const sceneEmoteArray: EmoteObject[] = [];
 let emoteQueue = new RingBuffer<EmoteObject>(50);
+let textureUseCount = new Counter<number>();
 
 setInterval(() => {
     let emote = emoteQueue.dequeue();
@@ -163,6 +165,7 @@ setInterval(() => {
     emote.userData.timestamp = Date.now()
     sceneEmoteArray.push(emote)
     scene.add(emote)
+    textureUseCount.add(emote.material.map?.id as number);
 }, 500);
 
 function resize() {
@@ -191,6 +194,11 @@ function draw() {
         if (element.userData.animationMixer.time >= walkAnim.duration) {
             sceneEmoteArray.splice(index, 1);
             scene.remove(element);
+            let texCount = textureUseCount.sub(element.material.map?.id as number);
+            if (texCount === 0) {
+                console.debug("diposed of", element.material.map)
+                element.material.map?.dispose();
+            }
         } else if (element.updateAnim) {
             element.updateAnim(delta);
         }
