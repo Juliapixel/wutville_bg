@@ -12,8 +12,8 @@ importers:
         specifier: ^0.171.0
         version: 0.171.0
       twitch-emote-client:
-        specifier: ^0.3.0
-        version: 0.3.0(three@0.171.0)
+        specifier: ^0.5.0
+        version: 0.5.0(three@0.171.0)
     devDependencies:
       '@types/three':
         specifier: ^0.170.0
@@ -560,8 +560,8 @@ packages:
   tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
 
-  twitch-emote-client@0.3.0:
-    resolution: {integrity: sha512-ri6az/g8qDkgiw2TX+u8CuaFk6YWMqJAuKrMjOm8Irg7/0aCGyQoJB8euRomZ2ZtbtPd98eCaG3BmV+D4S7l/w==}
+  twitch-emote-client@0.5.0:
+    resolution: {integrity: sha512-rp+Cfqj/BO5UVFiL8RwjwHkBdRZ672Cvq7gQScS3EgYoSqH5slpE7ove9p0WIyu+jixhxr9FaaD894rFqkwOLw==}
     peerDependencies:
       three: '>= 0.160'
 
@@ -1061,7 +1061,7 @@ snapshots:
 
   tr46@0.0.3: {}
 
-  twitch-emote-client@0.3.0(three@0.171.0):
+  twitch-emote-client@0.5.0(three@0.171.0):
     dependencies:
       three: 0.171.0
       tmi-js: tmi.js@1.8.5

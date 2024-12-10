@@ -12,6 +12,7 @@ import {
     Light,
     LoadingManager,
     Mesh,
+    MeshStandardMaterial,
     PCFShadowMap,
     PerspectiveCamera,
     Plane,
@@ -38,7 +39,8 @@ import {
     EmotesClient,
     EmoteObject,
     CallbackEmoteInfo,
-    EmoteLoader
+    EmoteLoader,
+    MaterialKind
 } from "twitch-emote-client";
 
 import { SnowPass } from "./overlay";
@@ -89,6 +91,14 @@ gltfLoader.setMeshoptDecoder(MeshoptDecoder);
 
 let walkAnim: AnimationClip;
 
+let envMap = await new TextureLoader(loadingManager)
+    .loadAsync("https://cdn.juliapixel.com/christmas/skybox.png")
+    .then((t) => {
+        t.mapping = EquirectangularReflectionMapping;
+        t.colorSpace = SRGBColorSpace;
+        return t;
+    });
+
 // load the scene from blender
 await gltfLoader
     .loadAsync("https://cdn.juliapixel.com/christmas/wutville_comp.glb")
@@ -112,6 +122,9 @@ await gltfLoader
             if (obj instanceof Light) {
                 obj.intensity *= 0.003;
             }
+            if (obj instanceof Mesh && obj.material instanceof MeshStandardMaterial) {
+                obj.material.envMap = envMap
+            }
         });
 
         scene.add(glb.scene);
@@ -120,13 +133,7 @@ await gltfLoader
 scene.add(new AmbientLight("#bdd6ff", 0.6));
 scene.fog = new Fog("#20538a", 5, 75);
 
-new TextureLoader(loadingManager)
-    .loadAsync("https://cdn.juliapixel.com/christmas/skybox.png")
-    .then((t) => {
-        t.mapping = EquirectangularReflectionMapping;
-        t.colorSpace = SRGBColorSpace;
-        scene.background = t;
-    });
+scene.background = envMap;
 
 const renderer = new WebGLRenderer({ antialias: false, stencil: false });
 
@@ -239,7 +246,7 @@ client.on("emote", (emotes, channel) => {
  ** Handle Twitch Chat Emotes
  */
 
-const emoteLoader = new EmoteLoader(loadingManager, client.config.emotesApi);
+const emoteLoader = new EmoteLoader(loadingManager, client.config.emotesApi, MaterialKind.Standard);
 const spawnEmote = (emotes: CallbackEmoteInfo[], channel: string) => {
     //prevent lag caused by emote buildup when you tab out from the page for a while
     if (performance.now() - lastFrame > 1000) return;
@@ -252,6 +259,8 @@ const spawnEmote = (emotes: CallbackEmoteInfo[], channel: string) => {
 
             obj.userData.timestamp = 0;
             obj.name = "root";
+
+            obj.material.envMap = envMap;
 
             let mixer = new AnimationMixer(obj);
             let action = mixer.clipAction(walkAnim);
