@@ -1,5 +1,5 @@
 export class Counter<T> {
-    private values: Map<T, number>
+    private values: Map<T, number>;
 
     constructor() {
         this.values = new Map();

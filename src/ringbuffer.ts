@@ -1,12 +1,16 @@
 export class RingBuffer<T> implements Iterable<T> {
-    private buffer: Array<T | undefined>
+    private buffer: Array<T | undefined>;
     private capacity: number;
     private start: number;
     private length: number;
 
     constructor(capacity: number) {
-        this.capacity = capacity
-        this.buffer = new Array<T | undefined>(capacity).fill(undefined, 0, capacity - 1)
+        this.capacity = capacity;
+        this.buffer = new Array<T | undefined>(capacity).fill(
+            undefined,
+            0,
+            capacity - 1
+        );
         this.length = 0;
         this.start = 0;
     }
@@ -15,19 +19,19 @@ export class RingBuffer<T> implements Iterable<T> {
         let localThis = this;
         return {
             next() {
-                let val = localThis.dequeue()
+                let val = localThis.dequeue();
                 if (val !== undefined) {
                     return {
                         value: val,
                         done: false
-                    } as IteratorResult<T, T>
+                    } as IteratorResult<T, T>;
                 } else {
                     return {
                         done: true
-                    } as IteratorResult<T, T>
+                    } as IteratorResult<T, T>;
                 }
-            },
-        }
+            }
+        };
     }
 
     enqueue(item: T): T | undefined {
@@ -49,8 +53,8 @@ export class RingBuffer<T> implements Iterable<T> {
         }
         const out = this.buffer[this.start];
         this.buffer[this.start] = undefined;
-        this.start = (this.start + 1) % this.capacity
+        this.start = (this.start + 1) % this.capacity;
         this.length -= 1;
-        return out
+        return out;
     }
 }
