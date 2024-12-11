@@ -241,9 +241,9 @@ client.on("emote", (emotes, channel) => {
  */
 
 const emoteLoader = new EmoteLoader(
-    loadingManager,
     client.config.emotesApi,
-    MaterialKind.Standard
+    MaterialKind.Standard,
+    loadingManager,
 );
 const spawnEmote = (emotes: CallbackEmoteInfo[], channel: string) => {
     //prevent lag caused by emote buildup when you tab out from the page for a while
