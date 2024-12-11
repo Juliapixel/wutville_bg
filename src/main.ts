@@ -4,25 +4,17 @@ import {
     AmbientLight,
     AnimationClip,
     AnimationMixer,
-    ArrowHelper,
-    DirectionalLight,
     EquirectangularReflectionMapping,
     Fog,
-    Group,
     Light,
     LoadingManager,
     Mesh,
     MeshStandardMaterial,
     PCFShadowMap,
     PerspectiveCamera,
-    Plane,
-    PlaneHelper,
-    RepeatWrapping,
     Scene,
     SRGBColorSpace,
     TextureLoader,
-    Vector2,
-    Vector3,
     WebGLRenderer
 } from "three";
 import {
@@ -30,8 +22,7 @@ import {
     GLTFLoader,
     OutputPass,
     RenderPass,
-    SMAAPass,
-    TexturePass
+    SMAAPass
 } from "three/examples/jsm/Addons.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 
@@ -122,8 +113,11 @@ await gltfLoader
             if (obj instanceof Light) {
                 obj.intensity *= 0.003;
             }
-            if (obj instanceof Mesh && obj.material instanceof MeshStandardMaterial) {
-                obj.material.envMap = envMap
+            if (
+                obj instanceof Mesh &&
+                obj.material instanceof MeshStandardMaterial
+            ) {
+                obj.material.envMap = envMap;
             }
         });
 
@@ -246,7 +240,11 @@ client.on("emote", (emotes, channel) => {
  ** Handle Twitch Chat Emotes
  */
 
-const emoteLoader = new EmoteLoader(loadingManager, client.config.emotesApi, MaterialKind.Standard);
+const emoteLoader = new EmoteLoader(
+    loadingManager,
+    client.config.emotesApi,
+    MaterialKind.Standard
+);
 const spawnEmote = (emotes: CallbackEmoteInfo[], channel: string) => {
     //prevent lag caused by emote buildup when you tab out from the page for a while
     if (performance.now() - lastFrame > 1000) return;

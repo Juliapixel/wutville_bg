@@ -3,6 +3,6 @@ declare interface ImportMeta {
         SSR: boolean;
         PROD: boolean;
         DEV: boolean;
-        MODE: "development" | "production"
-    }
+        MODE: "development" | "production";
+    };
 }
